@@ -98,3 +98,35 @@ def _apply_transitive_reduction(data: np.ndarray) -> np.ndarray:
                     visited[child] = True
 
     return data
+
+
+def _calculate_ranks(data: np.ndarray) -> np.ndarray:
+    """
+    Calculates ranks for the nodes in a graph given by its adjacency matrix.
+
+    Parameters:
+    - data (np.ndarray): Adjacency matrix.
+
+    Returns:
+    - np.ndarray: Ranks for the nodes in a graph.
+    """
+    nr_nodes = data.shape[0]
+    ranks = np.ones(nr_nodes, dtype=int)
+    queue = list(np.where(np.sum(data, axis=0) == 0)[0])
+    distances = [1] * len(queue)
+
+    while queue:
+        element = queue.pop(0)
+        dist = distances.pop(0)
+        children = np.where(data[element, :])[0]
+
+        for child in children:
+            if child not in queue:
+                ranks[child] = dist + 1
+                queue.append(child)
+                distances.append(dist + 1)
+            else:
+                distances[queue.index(child)] = max(distances[queue.index(child)], dist + 1)
+                ranks[child] = max(ranks[child], dist + 1)
+
+    return ranks
