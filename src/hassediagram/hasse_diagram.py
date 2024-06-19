@@ -35,7 +35,6 @@ def _hasse_matrix(data: np.ndarray, labels: Optional[List[str]] = None, transiti
 
     np.fill_diagonal(data, 0)
     data, labels_dict = _find_and_merge_cycles(data, labels_dict)
-    np.fill_diagonal(data, 0)
 
     if transitive_reduction:
         data = _apply_transitive_reduction(data)
@@ -93,7 +92,7 @@ def plot_hasse(
     pos = nx.multipartite_layout(G, subset_key="rank")
     pos = {k: (v[1], -v[0]) for k, v in pos.items()}
 
-    node_size = 2000  # Adjust node size as needed
+    node_size = 2000
     for node, (x, y) in pos.items():
         pos[node] = (x - 0.5 * node_size, y - 0.5 * node_size)
 
