@@ -1,7 +1,11 @@
+import matplotlib
+import matplotlib.pyplot as plt
 import numpy as np
 import pytest
 
-from src.hassediagram.hasse_diagram import _hasse_matrix
+from src.hassediagram.hasse_diagram import _hasse_matrix, plot_hasse
+
+matplotlib.use('Agg')
 
 
 @pytest.mark.parametrize(
@@ -94,3 +98,74 @@ def test_hasse_matrix(input_matrix, labels, transitive_reduction, expected_matri
     assert np.array_equal(result_matrix, expected_matrix)
     assert result_labels == expected_labels
     assert np.array_equal(result_ranks, expected_ranks)
+
+
+@pytest.mark.filterwarnings("ignore:.*FigureCanvasAgg is non-interactive.*")
+@pytest.mark.parametrize(
+    "input_matrix, labels, transitive_reduction, edge_color, node_color",
+    [
+        (
+                np.array([
+                    [0, 1, 0, 0],
+                    [0, 0, 1, 0],
+                    [0, 0, 0, 1],
+                    [0, 0, 0, 0]
+                ]),
+                None,
+                True,
+                'black',
+                'none'
+        ),
+        (
+                np.array([
+                    [0, 1, 1, 0],
+                    [0, 0, 1, 0],
+                    [0, 0, 0, 1],
+                    [0, 0, 0, 0]
+                ]),
+                ["A", "B", "C", "D"],
+                True,
+                'blue',
+                'red'
+        ),
+        (
+                np.array([
+                    [0, 1, 1],
+                    [0, 0, 1],
+                    [0, 0, 0]
+                ]),
+                ["X", "Y", "Z"],
+                False,
+                'green',
+                'yellow'
+        ),
+        (
+                np.array([
+                    [0, 0, 0, 0],
+                    [0, 0, 0, 0],
+                    [0, 0, 0, 0],
+                    [0, 0, 0, 0]
+                ]),
+                None,
+                True,
+                'cyan',
+                'magenta'
+        )
+    ],
+    ids=[
+        "simple_no_labels",
+        "with_labels_transitive_reduction",
+        "without_transitive_reduction",
+        "disconnected_graph"
+    ]
+)
+def test_plot_hasse(input_matrix, labels, transitive_reduction, edge_color, node_color):
+    plt.figure()
+    plot_hasse(
+        data=input_matrix,
+        labels=labels,
+        transitive_reduction=transitive_reduction,
+        edge_color=edge_color,
+        node_color=node_color
+    )
+    plt.close()
