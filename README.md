@@ -30,4 +30,9 @@ Result:
 
 You can optionally turn off the transitive reduction and change the color of nodes and edges.
 
+## Testing
+```
+pytest --cov=src --cov-report=term-missing
+```
+
 This package is inspired by a similar one for R: [hasseDiagram](https://github.com/kciomek/hasseDiagram)

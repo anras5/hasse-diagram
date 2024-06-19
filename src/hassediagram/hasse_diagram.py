@@ -4,7 +4,7 @@ import matplotlib.pyplot as plt
 import networkx as nx
 import numpy as np
 
-from .cycles import _apply_transitive_reduction, _find_and_merge_cycles
+from .cycles import _apply_transitive_reduction, _calculate_ranks, _find_and_merge_cycles
 
 
 def _hasse_matrix(data: np.ndarray, labels: Optional[List[str]] = None, transitive_reduction: bool = True):
@@ -19,6 +19,7 @@ def _hasse_matrix(data: np.ndarray, labels: Optional[List[str]] = None, transiti
     Returns:
     - np.ndarray: Processed adjacency matrix.
     - List[str]: Processed labels.
+    - np.ndarray: Ranks for the nodes in the graph.
     """
     assert isinstance(data, np.ndarray)
     assert data.shape[0] > 0
@@ -35,12 +36,13 @@ def _hasse_matrix(data: np.ndarray, labels: Optional[List[str]] = None, transiti
 
     np.fill_diagonal(data, 0)
     data, labels_dict = _find_and_merge_cycles(data, labels_dict)
-    np.fill_diagonal(data, 0)
 
     if transitive_reduction:
         data = _apply_transitive_reduction(data)
 
-    return data, labels_dict
+    ranks = _calculate_ranks(data)
+
+    return data, labels_dict, ranks
 
 
 def plot_hasse(
@@ -61,26 +63,8 @@ def plot_hasse(
     - node_color (str, optional): Color of nodes.
     """
 
-    data, labels_dict = _hasse_matrix(data, labels, transitive_reduction)
+    data, labels_dict, ranks = _hasse_matrix(data, labels, transitive_reduction)
     nr_nodes = data.shape[0]
-
-    ranks = np.ones(nr_nodes, dtype=int)
-    queue = list(np.where(np.sum(data, axis=0) == 0)[0])
-    distances = [1] * len(queue)
-
-    while queue:
-        element = queue.pop(0)
-        dist = distances.pop(0)
-        children = np.where(data[element, :])[0]
-
-        for child in children:
-            if child not in queue:
-                ranks[child] = dist + 1
-                queue.append(child)
-                distances.append(dist + 1)
-            else:
-                distances[queue.index(child)] = max(distances[queue.index(child)], dist + 1)
-                ranks[child] = max(ranks[child], dist + 1)
 
     G = nx.DiGraph()
     for i in range(nr_nodes):
@@ -93,7 +77,7 @@ def plot_hasse(
     pos = nx.multipartite_layout(G, subset_key="rank")
     pos = {k: (v[1], -v[0]) for k, v in pos.items()}
 
-    node_size = 2000  # Adjust node size as needed
+    node_size = 2000
     for node, (x, y) in pos.items():
         pos[node] = (x - 0.5 * node_size, y - 0.5 * node_size)
 
