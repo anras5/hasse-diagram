@@ -5,7 +5,7 @@ import matplotlib.pyplot as plt
 import networkx as nx
 import numpy as np
 
-from cycles import _apply_transitive_reduction, _calculate_ranks, _find_and_merge_cycles
+from .cycles import _apply_transitive_reduction, _calculate_ranks, _find_and_merge_cycles
 
 
 def _hasse_matrix(data: np.ndarray, labels: Optional[List[str]] = None, transitive_reduction: bool = True):
@@ -163,19 +163,12 @@ def hasse_graphviz(
 
 
 if __name__ == '__main__':
-    data = np.array([[0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-                     [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-                     [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-                     [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-                     [1, 1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0],
-                     [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-                     [1, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0],
-                     [1, 1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 1, 0, 1],
-                     [1, 1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 1, 0, 0],
-                     [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-                     [1, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 1, 0, 0],
-                     [1, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0],
-                     [1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-                     [1, 1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0]])
-    names = ['a01', 'a02', 'a03', 'a04', 'a05', 'a06', 'a07', 'a08', 'a09', 'a10', 'a11', 'a12', 'a13', 'a14']
-    print(hasse_graphviz(data, names))
+    data = np.array([
+        [0, 1, 1, 1, 1],
+        [0, 0, 1, 0, 1],
+        [0, 1, 0, 0, 1],
+        [0, 0, 0, 0, 0],
+        [0, 0, 0, 0, 0]
+    ])
+    labels = ["node a", "node b", "node c", "node d", "node e"]
+    print(hasse_graphviz(data, labels))
