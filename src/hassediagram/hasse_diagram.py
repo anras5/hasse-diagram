@@ -1,5 +1,6 @@
 from typing import List, Optional
 
+import graphviz
 import matplotlib.pyplot as plt
 import networkx as nx
 import numpy as np
@@ -98,3 +99,76 @@ def plot_hasse(
 
     plt.axis('off')
     plt.show()
+
+
+def hasse_graphviz(
+        data: np.ndarray,
+        labels: Optional[List[str]] = None,
+        transitive_reduction: bool = True,
+        bg_color: str = '#FFFFFF',
+        edge_color: str = 'black',
+        node_color: str = '#E2E8F0'
+) -> graphviz.Digraph:
+    """
+    Generates a Hasse diagram using Graphviz and returns it as a Digraph object.
+
+    Parameters:
+    - data (np.ndarray): Adjacency matrix of the graph.
+    - labels (Optional[List[str]], optional): Labels for nodes.
+    - transitive_reduction (bool, optional): Whether to perform transitive reduction.
+    - bg_color (str, optional): Background color of the graph.
+    - edge_color (str, optional): Color of the edges.
+    - node_color (str, optional): Color of the nodes.
+
+    Returns:
+    - graphviz.Digraph: Graphviz Digraph object representing the Hasse diagram.
+    """
+    # Get matrix for the graph
+    data, labels_dict, ranks = _hasse_matrix(data, labels, transitive_reduction)
+    nr_nodes = data.shape[0]
+
+    # Create digraph
+    dot = graphviz.Digraph()
+
+    # Setup general configuration for the graph
+    dot.attr(compound='true')
+    dot.graph_attr['bgcolor'] = bg_color
+    dot.node_attr['style'] = 'filled'
+    dot.node_attr['color'] = node_color
+    dot.node_attr['fontname'] = 'Segoe UI'
+    dot.node_attr['fontsize'] = '15 pt'
+    dot.edge_attr['color'] = edge_color
+    dot.edge_attr['arrowhead'] = 'vee'
+
+    # Create nodes
+    for i in range(nr_nodes):
+        dot.node(f'node{i + 1}', label=str(labels_dict[i]))
+
+    # Create edges
+    for i in range(nr_nodes):
+        for j in np.where(data[i, :])[0]:
+            dot.edge(f'node{i + 1}', f'node{j + 1}')
+
+    # Create sub graphs based on calculated ranks for each node
+    max_rank = max(ranks)
+    for rank in range(max_rank + 1):
+        with dot.subgraph(name=f'cluster_{rank + 1}') as sub:
+            sub.attr(rank='same')
+            for i in range(nr_nodes):
+                if ranks[i] == rank:
+                    sub.node(f'node{i + 1}')
+            sub.attr(peripheries='0')
+
+    return dot
+
+
+if __name__ == '__main__':
+    data = np.array([
+        [0, 1, 1, 1, 1],
+        [0, 0, 1, 0, 1],
+        [0, 1, 0, 0, 1],
+        [0, 0, 0, 0, 0],
+        [0, 0, 0, 0, 0]
+    ])
+    labels = ["node a", "node b", "node c", "node d", "node e"]
+    print(hasse_graphviz(data, labels))

@@ -1,9 +1,10 @@
+import graphviz
 import matplotlib
 import matplotlib.pyplot as plt
 import numpy as np
 import pytest
 
-from src.hassediagram.hasse_diagram import _hasse_matrix, plot_hasse
+from src.hassediagram.hasse_diagram import _hasse_matrix, hasse_graphviz, plot_hasse
 
 matplotlib.use('Agg')
 
@@ -169,3 +170,98 @@ def test_plot_hasse(input_matrix, labels, transitive_reduction, edge_color, node
         node_color=node_color
     )
     plt.close()
+
+
+@pytest.mark.parametrize(
+    "input_matrix, labels, transitive_reduction, bg_color, edge_color, node_color, expected_nodes, expected_edges",
+    [
+        (
+                np.array([
+                    [0, 1, 0, 0],
+                    [0, 0, 1, 0],
+                    [0, 0, 0, 1],
+                    [0, 0, 0, 0]
+                ]),
+                None,
+                True,
+                '#FFFFFF',
+                'black',
+                '#E2E8F0',
+                ['node1', 'node2', 'node3', 'node4'],
+                [('node1', 'node2'), ('node2', 'node3'), ('node3', 'node4')]
+        ),
+        (
+                np.array([
+                    [0, 1, 1, 0],
+                    [0, 0, 1, 0],
+                    [0, 0, 0, 1],
+                    [0, 0, 0, 0]
+                ]),
+                ["A", "B", "C", "D"],
+                True,
+                '#000000',
+                'blue',
+                'red',
+                ['node1', 'node2', 'node3', 'node4'],
+                [('node1', 'node2'), ('node3', 'node4'), ('node2', 'node3')]
+        ),
+        (
+                np.array([
+                    [0, 1, 1],
+                    [0, 0, 1],
+                    [0, 0, 0]
+                ]),
+                ["X", "Y", "Z"],
+                False,
+                '#FFFFFF',
+                'green',
+                'yellow',
+                ['node1', 'node2', 'node3'],
+                [('node1', 'node2'), ('node1', 'node3'), ('node2', 'node3')]
+        ),
+        (
+                np.array([
+                    [0, 0, 0, 0],
+                    [0, 0, 0, 0],
+                    [0, 0, 0, 0],
+                    [0, 0, 0, 0]
+                ]),
+                None,
+                True,
+                '#123456',
+                'cyan',
+                'magenta',
+                ['node1', 'node2', 'node3', 'node4'],
+                []
+        )
+    ],
+    ids=[
+        "simple_no_labels",
+        "with_labels_transitive_reduction",
+        "without_transitive_reduction",
+        "disconnected_graph"
+    ]
+)
+def test_hasse_graphviz(input_matrix, labels, transitive_reduction, bg_color, edge_color, node_color, expected_nodes,
+                        expected_edges):
+    dot = hasse_graphviz(
+        data=input_matrix,
+        labels=labels,
+        transitive_reduction=transitive_reduction,
+        bg_color=bg_color,
+        edge_color=edge_color,
+        node_color=node_color
+    )
+
+    # Check if the output is a graphviz.Digraph object
+    assert isinstance(dot, graphviz.Digraph)
+
+    # Check if all nodes are present in the dot string
+    lines = dot.body
+    for node_label in labels or expected_nodes:
+        assert any(node_label in node for node in lines)
+
+    # Check edges
+    lines = dot.body
+    for edge_start, edge_end in expected_edges:
+        assert any(f'{edge_start} -> {edge_end}' in line for line in lines)
