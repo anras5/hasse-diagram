@@ -107,7 +107,8 @@ def hasse_graphviz(
         transitive_reduction: bool = True,
         bg_color: str = '#FFFFFF',
         edge_color: str = 'black',
-        node_color: str = '#E2E8F0'
+        node_color: str = '#E2E8F0',
+        strict: bool = True
 ) -> graphviz.Digraph:
     """
     Generates a Hasse diagram using Graphviz and returns it as a Digraph object.
@@ -119,6 +120,7 @@ def hasse_graphviz(
     - bg_color (str, optional): Background color of the graph.
     - edge_color (str, optional): Color of the edges.
     - node_color (str, optional): Color of the nodes.
+    - strict (bool, optional): Whether to use strict mode for the graph (if True, no parallel edges).
 
     Returns:
     - graphviz.Digraph: Graphviz Digraph object representing the Hasse diagram.
@@ -128,7 +130,7 @@ def hasse_graphviz(
     nr_nodes = data.shape[0]
 
     # Create digraph
-    dot = graphviz.Digraph()
+    dot = graphviz.Digraph(strict=strict)
 
     # Setup general configuration for the graph
     dot.attr(compound='true')
